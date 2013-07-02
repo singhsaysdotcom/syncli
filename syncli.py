@@ -196,7 +196,7 @@ def main():
     with SynoBox(args.host, args.port) as d:
       d.username = args.username
       d.password = args.password
-      getattr(d, args.command)()
+      getattr(d, args.command)(args)
   else:
     logging.debug('Using configuration file %s', args.config_file)
     with SynoBox(args.host, config_file=config_file) as d:
