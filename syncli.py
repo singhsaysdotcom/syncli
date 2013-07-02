@@ -10,27 +10,26 @@ import time
 import yaml
 
 # default values
-defaults = {
+DEFAULTS = {
   'port': 5000,
   'proto': 'http'
 }
 
 # all available commands.
-commands = []
+COMMANDS = []
 
 
-def command(fn):
+def command(func):
   """Decorator to register a fn as an available command."""
-  global commands
-  if fn.__name__ not in commands:
-    commands.append(fn.__name__)
-  return fn
+  if func.__name__ not in COMMANDS:
+    COMMANDS.append(func.__name__)
+  return func
 
 
 class SynoBox(object):
   """Represents a Synology Device."""
 
-  def __init__(self, host, port=defaults['port'], proto=defaults['proto'],
+  def __init__(self, host, port=DEFAULTS['port'], proto=DEFAULTS['proto'],
                config_file=None):
     self.host = host
     self.port = port
@@ -116,8 +115,8 @@ class SynoBox(object):
         'SystemInfo.cgi' % self.config())
     data = {'_dc': int(time.time() * 1e3), 'query': 'overview'}
     resp = self._get(url, data)
-    for k,v in resp.iteritems():
-      print('%s : %s' % (k,v))
+    for k, v in resp.iteritems():
+      print('%s : %s' % (k, v))
 
   @command
   def list_packages(self, unused_args):
@@ -128,12 +127,12 @@ class SynoBox(object):
     data_other = {'action': 'listother'}
     pkg_data = self._get(url, data)
     pkg_data_other = self._get(url, data_other)
-    for x in pkg_data['data']:
-      if 'pkgstatus' in x:
-        print '%(dname)s (%(pkgstatus)s)' % x
-    for x in pkg_data_other['data']:
-      if 'pkgstatus' in x:
-        print '%(dname)s (%(pkgstatus)s)' % x
+    for d in pkg_data['data']:
+      if 'pkgstatus' in d:
+        print '%(dname)s (%(pkgstatus)s)' % d
+    for d in pkg_data_other['data']:
+      if 'pkgstatus' in d:
+        print '%(dname)s (%(pkgstatus)s)' % d
 
   @command
   def start_package(self, args):
@@ -169,14 +168,14 @@ def main():
   """Instantiates a SynoBox and runs commands against it."""
   parser = argparse.ArgumentParser(description="Synology DSM CLI")
   # TODO(singhsays): convert this to subparsers for each command.
-  parser.add_argument('command',  choices=commands)
+  parser.add_argument('command',  choices=COMMANDS)
   parser.add_argument('--package', default=None, help='package name')
   parser.add_argument('--host', help='hostname or IP address.',
                       required=True)
   parser.add_argument('--port', help='port',
-                      default=defaults['port'])
+                      default=DEFAULTS['port'])
   parser.add_argument('--proto', help='protocol',
-                      default=defaults['proto'], choices=['http', 'https'])
+                      default=DEFAULTS['proto'], choices=['http', 'https'])
   parser.add_argument('--username', help='DSM username')
   parser.add_argument('--password', help='DSM password')
   parser.add_argument('--config_file', help='configuration file',
