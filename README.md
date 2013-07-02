@@ -52,7 +52,7 @@ Currently Supported Operations
  + info : prints out system information
 
 ```bash
-$syncli --host xxxxx info
+$ syncli --host xxxxx info
 ntpenabled : True
 ramsize : 1024
 usbdev : []
@@ -72,7 +72,7 @@ systempwarn : False
  + list_packages:
 
 ```bash
-$./syncli.py --host xxxxx list_packages
+$ syncli.py --host xxxxx list_packages
 Plex Media Server (stop)
 DHCP Server (running)
 CouchPotato Server (stop)
@@ -84,13 +84,13 @@ SickBeard (stop)
  + start_package
 
 ```bash
-$syncli.py --host xxxxx --package 'Plex Media Server' start_package
+$ syncli.py --host xxxxx --package 'Plex Media Server' start_package
 Done
 ```
 
  + stop_package
 
 ```bash
-$syncli.py --host xxxxx --package 'Plex Media Server' stop_package
+$ syncli.py --host xxxxx --package 'Plex Media Server' stop_package
 Done
 ```
