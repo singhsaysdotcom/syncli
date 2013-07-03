@@ -53,6 +53,28 @@ Credentials provided as command line arguments override values from the configur
 
 Currently Supported Operations
 ------------------------------
+ + reboot : reboots the device
+
+```bash
+$ syncli --host xxxxx reboot
+Done
+```
+
+ + shutdown : shuts down the device
+
+```bash
+$ syncli --host xxxxx shutdown
+Done
+```
+
++ stats : prints stats from the resource monitor.
+
+```bash
+$ syncli --host xxxxx stats
+cpu: 0% loadavg: 119 115 114
+mem: 7% of 1GB
+```
+
  + info : prints out system information
 
 ```bash
@@ -76,7 +98,7 @@ systempwarn : False
  + list_packages:
 
 ```bash
-$ syncli.py --host xxxxx list_packages
+$ syncli --host xxxxx list_packages
 Plex Media Server (stop)
 DHCP Server (running)
 CouchPotato Server (stop)
@@ -88,13 +110,13 @@ SickBeard (stop)
  + start_package
 
 ```bash
-$ syncli.py --host xxxxx --package 'Plex Media Server' start_package
+$ syncli --host xxxxx --package 'Plex Media Server' start_package
 Done
 ```
 
  + stop_package
 
 ```bash
-$ syncli.py --host xxxxx --package 'Plex Media Server' stop_package
+$ syncli --host xxxxx --package 'Plex Media Server' stop_package
 Done
 ```
