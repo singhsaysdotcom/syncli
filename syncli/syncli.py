@@ -9,11 +9,20 @@ import sys
 import time
 import yaml
 
-# default values
+# default values.
 DEFAULTS = {
   'port': 5000,
   'proto': 'http'
 }
+
+# module uris.
+LOGIN = '/login.cgi'
+LOGOUT = '/ logout.cgi'
+REBOOT = '/  reboot.cgi'
+SYSTEMINFO = '/modules/SystemInfoApp/SystemInfo.cgi'
+PKGMAN = '/modules/PkgManApp/PkgMan.cgi'
+PKGSYNOMAN = '/modules/PkgManApp/PkgSynoMan.cgi'
+RESOURCEMONITOR = '/modules/ResourceMonitor/rsrcmonitor2.cgi'
 
 # all available commands.
 COMMANDS = []
@@ -24,6 +33,18 @@ def command(func):
   if func.__name__ not in COMMANDS:
     COMMANDS.append(func.__name__)
   return func
+
+
+def humanize(number, suffix=''):
+  """Transforms given input into human readable format."""
+  if number > 1e9:
+    return '%dG%s' % (round(number/1e9, 1), suffix)
+  if number > 1e6:
+    return '%dM%s' % (round(number/1e6, 1), suffix)
+  if number > 1e3:
+    return '%dK%s' % (round(number/1e3, 1), suffix)
+  return '%d%s' % (number, suffix)
+
 
 
 class SynoBox(object):
@@ -40,6 +61,7 @@ class SynoBox(object):
     self.cookies = None
     if config_file is not None:
       self.read_config(host, config_file)
+    self.base_url = '%(proto)s://%(host)s:%(port)s/webman' % self.config()
 
   def __enter__(self):
     if self.session_id is None:
@@ -80,7 +102,7 @@ class SynoBox(object):
     """Login and store session cookies."""
     if self.session_id is None:
       logging.debug('Authenticating ...')
-      url = '%(proto)s://%(host)s:%(port)s/webman/login.cgi' % self.config()
+      url = self.base_url + LOGIN
       data = {'username': self.username, 'passwd': self.password}
       resp = requests.post(url, data)
       if resp.status_code == 200:
@@ -89,7 +111,7 @@ class SynoBox(object):
 
   def logout(self):
     """Logout and cleanup existing session."""
-    url = '%(proto)s://%(host)s:%(port)s/webman/logout.cgi' % self.config()
+    url = self.base_url + LOGOUT
     resp = requests.get(url, cookies=self.cookies, allow_redirects=False)
     if resp.status_code == 302:
       self.cookies = None
@@ -98,70 +120,118 @@ class SynoBox(object):
       return True
     return False
 
-  def _get(self, url, data=None, method='POST'):
+  def _get(self, uri, data=None, method='POST'):
     """Fetch a url from this device with proper authentication cookies."""
-    url_full = url
+    url = self.base_url + uri
+    logging.debug('Fetching %s', url)
     resp = None
     if method == 'POST':
-      resp = requests.post(url_full, data, cookies=self.cookies)
+      resp = requests.post(url, data, cookies=self.cookies)
     else:
-      resp = requests.get(url_full, cookies=self.cookies)
+      resp = requests.get(url, cookies=self.cookies)
+    logging.debug(resp.status_code)
+    logging.debug(resp.text)
     return resp.json()
 
   @command
-  def info(self, unused_args):
+  def info(self, _):
     """Prints device information."""
-    url = ('%(proto)s://%(host)s:%(port)s/webman/modules/SystemInfoApp/'
-        'SystemInfo.cgi' % self.config())
+    uri = SYSTEMINFO
     data = {'_dc': int(time.time() * 1e3), 'query': 'overview'}
-    resp = self._get(url, data)
+    resp = self._get(uri, data)
     for k, v in resp.iteritems():
       print('%s : %s' % (k, v))
 
   @command
-  def list_packages(self, unused_args):
-    """Lists pacakges installed via Package Manager."""
-    url = ('%(proto)s://%(host)s:%(port)s/webman/modules/PkgManApp/'
-        'PkgSynoMan.cgi' % self.config())
+  def list_package_sources(self, _):
+    """Lists all registered packages sources/repositories."""
+    uri = PKGSYNOMAN
+    data = {'action': 'listfeed'}
+    resp = self._get(uri, data)
+    for src in resp['items']:
+      print '%(name)s (%(feed)s)' % src
+
+  def all_packages(self):
+    """Fetch a list of all known packages."""
+    uri = PKGSYNOMAN
     data = {'action': 'list'}
     data_other = {'action': 'listother'}
-    pkg_data = self._get(url, data)
-    pkg_data_other = self._get(url, data_other)
-    for d in pkg_data['data']:
+    pkg_data = self._get(uri, data)
+    pkg_data_other = self._get(uri, data_other)
+    return pkg_data['data'] + pkg_data_other['data']
+
+  @command
+  def list_packages(self, _):
+    """Lists pacakges installed via Package Manager."""
+    for d in self.all_packages():
       if 'pkgstatus' in d:
-        print '%(dname)s (%(pkgstatus)s)' % d
-    for d in pkg_data_other['data']:
-      if 'pkgstatus' in d:
-        print '%(dname)s (%(pkgstatus)s)' % d
+        print '%(dname)s (%(version)s)  -- %(pkgstatus)s' % d
+
+  @command
+  def available_packages(self, _):
+    """Lists packages available for installation via Package Manager."""
+    for d in self.all_packages():
+      if 'pkgstatus' not in d:
+        print '%(dname)s (%(version)s)' % d
 
   @command
   def start_package(self, args):
     """Starts a package installed via Package Manager."""
-    url = ('%(proto)s://%(host)s:%(port)s/webman/modules/PkgManApp/'
-        'PkgMan.cgi' % self.config())
+    uri = PKGMAN
     data = {'action': 'apply',
             'operation': 'start',
             'packagename': args.package}
-    resp = self._get(url, data)
+    resp = self._get(uri, data)
     if resp['success']:
       print 'Done'
     else:
       print('Failed to start package %s', args.pacakge)
-
 
   @command
   def stop_package(self, args):
     """Stops a packagei installed via Package Manager."""
-    url = ('%(proto)s://%(host)s:%(port)s/webman/modules/PkgManApp/'
-        'PkgMan.cgi' % self.config())
+    uri = PKGMAN
     data = {'action': 'apply',
             'operation': 'stop',
             'packagename': args.package}
-    resp = self._get(url, data)
+    resp = self._get(uri, data)
     if resp['success']:
       print 'Done'
     else:
       print('Failed to start package %s', args.pacakge)
+
+  @command
+  def stats(self, _):
+    """Prints resource usage stats."""
+    uri = RESOURCEMONITOR
+    data = {'action': 'system_load_widget'}
+    resp = self._get(uri, data)
+    if 'cpu' in resp:
+      print('cpu: %(SystemLoad)s%% loadavg: %(1minLoad)s %(5minLoad)s '
+            '%(15minLoad)s' % resp['cpu'])
+    if 'memory' in resp:
+      print('mem: %(RealUsage)s%%' % resp['memory']),
+      print('of %s' % humanize(resp['memory']['RamSize'] * 1e3, suffix='B'))
+
+  def reboot_or_shutdown(self, opt='reboot'):
+    """Reboot or shutdown the device."""
+    uri = REBOOT
+    data = {'_dc': int(time.time() * 1e3), 'opt': opt}
+    resp = self._get(uri, data)
+    if resp['success']:
+      print 'Done'
+    else:
+      print('Failed to %s device.' % opt)
+
+  @command
+  def reboot(self, _):
+    """Reboot the device."""
+    self.reboot_or_shutdown()
+
+  @command
+  def shutdown(self, _):
+    """Shutdown the device."""
+    self.reboot_or_shutdown(opt='shutdown')
 
 
 def main():
