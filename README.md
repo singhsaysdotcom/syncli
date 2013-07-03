@@ -15,10 +15,14 @@ Dependencies
 
 
 Installation
-----------
-` git clone https://github.com/singhsaysdotcom/syncli.git ~/syncli`
+------------
+```pip install syncli```
 
-` ln -sf ~/syncli/syncli.py /usr/local/bin/syncli`
+OR
+
+```git clone https://github.com/singhsaysdotcom/syncli.git ~/syncli```
+
+```ln -sf ~/syncli/syncli.py /usr/local/bin/syncli```
 
 
 
@@ -26,17 +30,17 @@ Usage
 -----
 
 Basic syntax is
-`syncli --host <hostname> <command>`
+```syncli --host <hostname> <command>```
 
 syncli handles authentication in one of two ways. You can either specify a username and password as command line options
 
-`syncli --host <hostname> --username <username> --password <password> <command>`
+```syncli --host <hostname> --username <username> --password <password> <command>```
 
 OR
 
 you can put them in a configuration file `~/.syncli.yaml` by default. The config file is a yaml file with the following structure.
 
-```yml
+```yaml
 host:
   username: <username>
   password: <password>
