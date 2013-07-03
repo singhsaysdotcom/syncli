@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='syncli',
-    version='0.0.1',
+    version='0.0.2',
     author='Sumeet Singh',
     author_email='singhsays@gmail.com',
     packages=['syncli'],
@@ -15,5 +15,10 @@ setup(
       "PyYaml >= 3.10",
       "requests >= 1.2.3",
     ],
+    entry_points={
+      'console_scripts': [
+        'syncli = syncli.syncli:main'
+      ]
+    }
 )
 

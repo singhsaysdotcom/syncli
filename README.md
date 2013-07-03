@@ -22,7 +22,7 @@ OR
 
 ```git clone https://github.com/singhsaysdotcom/syncli.git ~/syncli```
 
-```ln -sf ~/syncli/syncli.py /usr/local/bin/syncli```
+```ln -sf ~/syncli/syncli/syncli.py /usr/local/bin/syncli```
 
 
 
