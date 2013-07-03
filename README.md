@@ -99,12 +99,12 @@ systempwarn : False
 
 ```bash
 $ syncli --host xxxxx list_packages
-Plex Media Server (stop)
-DHCP Server (running)
-CouchPotato Server (stop)
-Python (running)
-SABnzbd (stop)
-SickBeard (stop)
+Plex Media Server (0.9.7.22.511-4b5280f)  -- stop
+DHCP Server (1.0-2275)  -- running
+CouchPotato Server (20130505-3)  -- stop
+Python (2.7.5-6)  -- running
+SABnzbd (0.7.12-6)  -- stop
+SickBeard (20130103-5)  -- stop
 ```
 
  + available_packages : lists all packages available for installation.
