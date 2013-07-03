@@ -95,7 +95,7 @@ serial : XXXXXXXXXX
 systempwarn : False
 ```
 
- + list_packages:
+ + list_packages : lists all packages installed via the Package Manager.
 
 ```bash
 $ syncli --host xxxxx list_packages
@@ -107,14 +107,28 @@ SABnzbd (stop)
 SickBeard (stop)
 ```
 
- + start_package
+ + available_packages : lists all packages available for installation.
+
+```bash
+$ syncli --host xxxxx available_packages
+iTunes Server (1.1-2270)
+VPN Server (1.1-2267)
+Cloud Station (2.0-2402)
+Time Backup (1.2-2278)
+Surveillance Station (6.0-2636)
+Mono (2.11.1-0004)
+Syslog Server (2.1-2309)
+...
+```
+
+ + start_package : start the named package.
 
 ```bash
 $ syncli --host xxxxx --package 'Plex Media Server' start_package
 Done
 ```
 
- + stop_package
+ + stop_package : stops the named package.
 
 ```bash
 $ syncli --host xxxxx --package 'Plex Media Server' stop_package
