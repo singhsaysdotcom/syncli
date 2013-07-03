@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='syncli',
-    version='0.0.2',
+    version='0.0.3',
     author='Sumeet Singh',
     author_email='singhsays@gmail.com',
     packages=['syncli'],
